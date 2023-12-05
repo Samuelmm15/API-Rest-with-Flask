@@ -409,3 +409,18 @@ Para finalizar, se implementa un nuevo fichero denominado como `update.html` de 
 {% endblock %}
 ```
 
+## Actividad 2
+
+1. Despliegue de la base de datos que aparece dentro del script `MyHome.sql`.
+
+Para el despligue de dicho script se hace uso del siguiente comando:
+
+```bash
+$ psql
+$ \i MyHome.sql
+```
+
+De esta manera se crea la base de datos denominada `myhome`, junto con sus respectivas tablas y sus respectivos registros.
+
+2. Construcción de una REST API para la base de datos `myhome`.
+
