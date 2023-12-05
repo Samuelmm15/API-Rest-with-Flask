@@ -76,3 +76,27 @@ def delete():
             return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
 
     return render_template('delete.html')
+
+@app.route('/update/', methods=('GET', 'POST'))
+def update():
+    if request.method == 'POST':
+        try:
+            id = request.form['id']
+            title = request.form['title']
+            author = request.form['author']
+            pages_num = int(request.form['pages_num'])
+            review = request.form['review']
+
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('UPDATE books SET title = %s, author = %s, pages_num = %s, review = %s WHERE id = %s',
+                        (title, author, pages_num, review, id))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('index'))
+        except Exception as e:
+            current_app.logger.error(f"Error al actualizar datos en la base de datos: {e}")
+            return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+            
+    return render_template('update.html')

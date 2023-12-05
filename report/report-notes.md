@@ -333,3 +333,79 @@ Para continuar y de manera final, se realiza la creación de un nuevo fichero de
     </form>
 {% endblock %}
 ```
+
+8. Construcción de una nueva operación dentro de la API REST que se encargue de la operación de actualización de un registro de la base de datos a partir del ID.
+
+Para la construcción de la nueva operación de actualización dentro de la API REST, en primer lugar se debe de implementar la siguiente ruta y la siguiente función dentro del archivo `app.py`:
+
+```python
+@app.route('/update/', methods=('GET', 'POST'))
+def update():
+    if request.method == 'POST':
+        try:
+            id = request.form['id']
+            title = request.form['title']
+            author = request.form['author']
+            pages_num = int(request.form['pages_num'])
+            review = request.form['review']
+
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('UPDATE books SET title = %s, author = %s, pages_num = %s, review = %s WHERE id = %s',
+                        (title, author, pages_num, review, id))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('index'))
+        except Exception as e:
+            current_app.logger.error(f"Error al actualizar datos en la base de datos: {e}")
+            return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+            
+    return render_template('update.html')
+```
+
+Para finalizar, se implementa un nuevo fichero denominado como `update.html` de tal manera que permite realizar la operación de update dentro del frontend que se está usando para poder realizar las distintas operaciones de la API REST:
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Update a Book {% endblock %}</h1>
+    <form method="post">
+        <p>
+          <label for="id">ID</label>
+          <input type="text" name="id"
+                   placeholder="ID of the book">
+            </input>
+        </p>
+        <p>
+          <label for="title">Title</label>
+          <input type="text" name="title"
+                   placeholder="Title of the book">
+            </input>
+        </p>
+        <p>
+          <label for="author">Author</label>
+          <input type="text" name="author"
+                   placeholder="Author of the book">
+            </input>
+        </p>
+        <p>
+          <label for="pages_num">Pages Number</label>
+          <input type="text" name="pages_num"
+                   placeholder="Pages number of the book">
+            </input>
+        </p>
+        <p>
+          <label for="review">Review</label>
+          <input type="text" name="review"
+                   placeholder="Review of the book">
+            </input>
+        </p>
+        <p>
+          <button type="submit">Submit</button>
+      </p>
+    </form>
+{% endblock %}
+```
+
