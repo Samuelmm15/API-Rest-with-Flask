@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Delete a Book {% endblock %}</h1>
+    <form method="post">
+        <p>
+          <label for="id">ID</label>
+          <input type="text" name="id"
+                   placeholder="ID of the book">
+            </input>
+        </p>
+        <p>
+          <button type="submit">Submit</button>
+      </p>
+    </form>
+{% endblock %}

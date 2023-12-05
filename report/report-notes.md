@@ -289,3 +289,47 @@ def create():
 ```
 
 7. Construcción de una nueva operación dentro de la API REST que se encargue de la operación de borrado de un registro de la base de datos a partir del ID.
+
+Para la construcción de la nueva operación de borrado dentro de la API REST, en primer lugar se debe de implementar la siguiente ruta y la siguiente función dentro del archivo `app.py`:
+
+```python
+@app.route('/delete/', methods=('GET', 'POST'))
+def delete():
+    if request.method == 'POST':
+        try:
+            id = request.form['id']
+            
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('DELETE FROM books WHERE id = %s', (id,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('index'))
+        except Exception as e:
+            current_app.logger.error(f"Error al eliminar datos de la base de datos: {e}")
+            return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+
+    return render_template('delete.html')
+```
+
+Para continuar y de manera final, se realiza la creación de un nuevo fichero denominado como `delete.html`, de tal manera que permite realizar la operación de delete dentro del frontend que se está usando para poder realizar las distintas operaciones de la API REST:
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Delete a Book {% endblock %}</h1>
+    <form method="post">
+        <p>
+          <label for="id">ID</label>
+          <input type="text" name="id"
+                   placeholder="ID of the book">
+            </input>
+        </p>
+        <p>
+          <button type="submit">Submit</button>
+      </p>
+    </form>
+{% endblock %}
+```

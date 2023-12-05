@@ -57,3 +57,22 @@ def create():
 def about():
     return render_template('about.html')
 
+# Implementación de la operación de borrado de un elemento de la base de datos, teniendo en cuenta el id del elemento a borrar
+@app.route('/delete/', methods=('GET', 'POST'))
+def delete():
+    if request.method == 'POST':
+        try:
+            id = request.form['id']
+            
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('DELETE FROM books WHERE id = %s', (id,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('index'))
+        except Exception as e:
+            current_app.logger.error(f"Error al eliminar datos de la base de datos: {e}")
+            return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+
+    return render_template('delete.html')
