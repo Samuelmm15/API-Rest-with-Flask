@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Select a Room ID to calculate the average temperature {% endblock %}</h1>
+    <form action="/room_temperature_id/result/" method="post">
+        <label for="room_id">Select an ID:</label>
+        <select name="room_id" id="room_id">
+            {% for id in room_id %}
+                <option value="{{ id[0] }}">{{ id[0] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <input type="submit" value="Select">
+    </form>
+{% endblock %}

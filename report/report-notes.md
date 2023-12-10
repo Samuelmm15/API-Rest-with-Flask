@@ -489,4 +489,137 @@ Una vez se realiza la consulta obteniendo la temperatura media de todas las habi
 {% endblock %}
 ```
 
+Para poder implementar la página que se encarga de mostrar el nombre de la habitación de partir del ID de esta que para el caso particular que se decide implementar, se obtiene a partir de un desplegable que te permite seleccionar el identificador de todos los existentes dentro de la base de datos, para ello se realiza la siguiente implementación:
 
+```python
+@app.route('/room/', methods=['GET'])
+def room_id():
+    try:
+        if request.method == 'GET':
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('SELECT id FROM rooms;')
+            room_id = cur.fetchall()
+            cur.close()
+            conn.close()
+            return render_template('room_id.html', room_id=room_id)
+    except Exception as e:
+        current_app.logger.error(f"Error at the data base consultation: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+Dentro del HTML se hace uso del siguiente desarrollo:
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Select a Room ID {% endblock %}</h1>
+    <form action="/room/result/" method="post">
+        <label for="room_id">Select an ID:</label>
+        <select name="room_id" id="room_id">
+            {% for id in room_id %}
+                <option value="{{ id[0] }}">{{ id[0] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <input type="submit" value="Select">
+    </form>
+{% endblock %}
+```
+
+Una vez el usuario realiza la selección de uno de los identificadores de la lista, se procede a obtener el nombre de la habitación a partir del ID seleccionado, para ello se realiza la siguiente implementación:
+
+```python
+@app.route('/room/result/', methods=['POST'])
+def room_result():
+    try:
+        room_id = request.form['room_id']
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT name FROM rooms WHERE id=%s;', (room_id,))
+        roomname = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+        return render_template('room_name.html', room_name=roomname)
+    except Exception as e:
+        current_app.logger.error(f"Error at the database consultation: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+En cuanto al HTML implantado se puede observar a continuación:
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Room Name {% endblock %}</h1>
+    <p>The name of the room that you selected is: {{ room_name }}</p>
+{% endblock %}
+```
+
+Para la realización del cuarto punto a implantar dentro de la REST API, se debe de implementar de manera similar a la anterior, pero para este caso que se devuelva la media histórica de la temperatura de una habitación a partir del ID de esta, para ello en primer lugar se obtiene una lista con cada uno de los distintos identificadores de la habitaciones que existen dentro de la base de datos:
+
+```python
+@app.route('/room_temperature_id/', methods=['GET'])
+def room_temperature_id():
+    try:
+        if request.method == 'GET':
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('SELECT id FROM rooms;')
+            room_id = cur.fetchall()
+            cur.close()
+            conn.close()
+            return render_template('room_temperature_id.html', room_id=room_id)
+    except Exception as e:
+        current_app.logger.error(f"Error at the data base consultation: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+```python
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Select a Room ID to calculate the average temperature {% endblock %}</h1>
+    <form action="/room_temperature_id/result/" method="post">
+        <label for="room_id">Select an ID:</label>
+        <select name="room_id" id="room_id">
+            {% for id in room_id %}
+                <option value="{{ id[0] }}">{{ id[0] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <input type="submit" value="Select">
+    </form>
+{% endblock %}
+```
+
+Para finalizar, se realiza la petición a la base de datos para obtener la media histórica de la temperatura de la habitación seleccionada por el usuario:
+
+```python
+@app.route('/room_temperature_id/result/', methods=['POST'])
+def room_temperature_id_result():
+    try:
+        roomID = request.form['room_id']
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT AVG(temperature) FROM temperatures WHERE room_id=%s;', (roomID,))
+        temperature = cur.fetchall()
+        cur.close()
+        conn.close()
+        temperature = temperature[0][0]
+        return render_template('room_temperature.html', room_id=roomID,room_temperature=temperature)
+    except Exception as e:
+        current_app.logger.error(f"Error at the data base consultation: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Room average temperature {% endblock %}</h1>
+    <p>The room number {{ room_id }} has the historic average temperature of: {{ room_temperature }}</p>
+{% endblock %}
+```
