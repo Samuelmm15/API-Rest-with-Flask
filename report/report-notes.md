@@ -424,3 +424,69 @@ De esta manera se crea la base de datos denominada `myhome`, junto con sus respe
 
 2. Construcción de una REST API para la base de datos `myhome`.
 
+Para comenzar con la construcción de una REST API para la base de datos `myhome`,  se realiza la implementación de una página principal, que permita visualizar todos los registros de las habitaciones de la base de datos, de la siguiente manera:
+
+```python
+@app.route('/')
+def index():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM temperatures;')
+        temperature = cur.fetchall()
+        cur.close()
+        conn.close()
+        return render_template('index.html', rooms=temperature)
+    except Exception as e:
+        current_app.logger.error(f"Error en la consulta a la base de datos: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+Teniendo en cuenta esto anterior, el archivo `index.html` se desarrolla de la siguiente manera para poder visualizar dichos registros:
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Rooms {% endblock %}</h1>
+    {% for room in rooms %}
+        <div class='room'>
+            <h3>#{{ room[0] }} - Room {{ room[1] }} temperature: {{ room[2] }}</h3>
+            <i><p> On ({{ room[3] }})</p></i>
+        </div>
+    {% endfor %}
+{% endblock %}
+```
+
+Una vez se tiene la página principal, se procede a realizar la implementación de la página que se encarga de mostrar la temperatura media de todas las habitaciones que se encuentran dentro de la base de datos, para ello:
+
+```python
+@app.route('/average/')
+def average():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT AVG(temperature) FROM temperatures;')
+        average = cur.fetchall()
+        cur.close()
+        conn.close()
+        # Se obtiene el valor de la media para que se muestre de manera correcta en el html.
+        average = average[0][0]
+        return render_template('average.html', average=average)
+    except Exception as e:
+        current_app.logger.error(f"Error en la consulta a la base de datos: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+Una vez se realiza la consulta obteniendo la temperatura media de todas las habitaciones que se encuentran dentro de la base de datos, se realiza la implementación del archivo `average.html` de la siguiente manera:
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Average {% endblock %}</h1>
+    <p> The average of the temperature of all the rooms is: {{ average }} </p>
+{% endblock %}
+```
+
+

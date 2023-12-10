@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error en la aplicación</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .error-container {
+            text-align: center;
+        }
+
+        h1 {
+            color: #d64161;
+        }
+
+        p {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error on the app</h1>
+        <p>It's an error type: <strong>{{ error_type }}</strong>.</p>
+        <p>Error details: <em>{{ error_message }}</em></p>
+        <p>Please, try again later.</p>
+    </div>
+</body>
+</html>

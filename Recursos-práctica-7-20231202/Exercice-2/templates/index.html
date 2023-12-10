@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Rooms {% endblock %}</h1>
+    {% for room in rooms %}
+        <div class='room'>
+            <h3>#{{ room[0] }} - Room {{ room[1] }} temperature: {{ room[2] }}</h3>
+            <i><p> On ({{ room[3] }})</p></i>
+        </div>
+    {% endfor %}
+{% endblock %}
