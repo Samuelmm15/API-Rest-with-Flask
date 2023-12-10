@@ -623,3 +623,78 @@ def room_temperature_id_result():
     <p>The room number {{ room_id }} has the historic average temperature of: {{ room_temperature }}</p>
 {% endblock %}
 ```
+
+Para el quinto y último punto de la segunda actividad, se debe de implementar una página que devuelva la temperatura mínima de la habitación y su nombre en formato JSON, de tal manera que a partir del ID de la habitación se pueda obtener dicha información, para ello se realiza la siguiente implementación:
+
+```python
+@app.route('/room_temperature_id_min/', methods=['GET'])
+def room_temperature_id_min():
+    try:
+        if request.method == 'GET':
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('SELECT id FROM rooms;')
+            room_id = cur.fetchall()
+            cur.close()
+            conn.close()
+            return render_template('room_temperature_id_min.html', room_id=room_id)
+    except Exception as e:
+        current_app.logger.error(f"Error at the data base consultation: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Select a Room ID to calculate the Minimum temperature {% endblock %}</h1>
+    <form action="/room_temperature_id_min/result/" method="post">
+        <label for="room_id">Select an ID:</label>
+        <select name="room_id" id="room_id">
+            {% for id in room_id %}
+                <option value="{{ id[0] }}">{{ id[0] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <input type="submit" value="Select">
+    </form>
+{% endblock %}
+```
+
+Con esto anterior, se realiza un desplegable que permite seleccionar el identificador de la habitación la cual se quiere mostrar la temperatura mínima  de esta. Una vez se selecciona el identificador de la habitación, se realiza la petición a la base de datos para obtener la temperatura mínima de la habitación seleccionada por el usuario:
+
+```python
+@app.route('/room_temperature_id_min/result/', methods=['POST'])
+def room_temperature_id_min_result():
+    try:
+        roomID = request.form['room_id']
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT MIN(temperature) FROM temperatures WHERE room_id=%s;', (roomID,))
+        temperature = cur.fetchall()
+        cur.execute('SELECT name FROM rooms WHERE id=%s;', (roomID,))
+        roomname = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+        temperature = temperature[0][0]
+        # json format
+        data = {
+            "id": roomID,
+            "name": roomname,
+            "min_temperature": temperature
+        }
+        return render_template('room_temperature_id_min_result.html', json_data=json.dumps(data))
+    except Exception as e:
+        current_app.logger.error(f"Error at the data base consultation: {e}")
+        return render_template('error.html', error_type=type(e).__name__, error_message=str(e)), 500
+```
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Room Minimum temperature {% endblock %}</h1>
+    <p>{{ json_data }}</p>
+{% endblock %}
+```
+
